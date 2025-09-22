@@ -1,0 +1,45 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432" # Expose PostgreSQL port to host
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      # Pass environment variables from .env to the container
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?schema=public
+      JWT_SECRET: ${JWT_SECRET}
+      PORT: ${PORT}
+      RECIPE_HOST: ${RECIPE_HOST} # If this is an external service, keep it as is. If it's another service in docker-compose, change it.
+      NODE_ENV: production # Or development, depending on your needs
+    ports:
+      - "${PORT}:${PORT}"
+    depends_on:
+      db:
+        condition: service_healthy # Ensure DB is ready before starting the app
+    volumes:
+      - .:/app # Mount the current directory into the container for development (optional, remove for production)
+      - /app/node_modules # Exclude node_modules from host mount to prevent conflicts
+    command: sh -c "npx prisma migrate deploy && npm start" # Run migrations and then start the app
+
+volumes:
+  postgres_data:

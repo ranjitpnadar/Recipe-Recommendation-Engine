@@ -1,0 +1,19 @@
+# requirements.txt
+
+# FastAPI and Uvicorn for the web API
+fastapi==0.111.0
+uvicorn==0.30.1
+
+# LangChain core libraries
+langchain
+langchain-core
+langchain-community
+
+# LangChain integrations
+langchain-openai  # For OpenAI LLM and Embeddings
+langchain-chroma  # For ChromaDB vector store
+
+# Data handling and utilities
+python-dotenv     # For loading environment variables
+pydantic          # Used by FastAPI for data validation (explicitly listed for clarity)
+tiktoken         # Often a dependency for OpenAI models, good to include
