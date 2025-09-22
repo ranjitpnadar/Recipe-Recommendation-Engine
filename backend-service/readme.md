@@ -2,11 +2,11 @@
 
 This is a Node.js Express API for managing recipes, user authentication, and integrating with an external Large Language Model (LLM) service for recipe recommendations and intelligent recipe creation. It uses Prisma as an ORM for PostgreSQL.
 
-## Table of Contents
+## Table of Contentss
 
 - [Recipe Book API](#recipe-book-api)
   - [Table of Contents](#table-of-contents)
-  - [Features](#features)
+  - [Features](#features)s
   - [Technologies Used](#technologies-used)
   - [Getting Started](#getting-started)
     - [Prerequisites](#prerequisites)
