@@ -1,171 +1,169 @@
-
-# Recipe Recommendation Engine
-
-> A recipe recommendation engine combining a backend service and a RAG-style (retrieval-augmented generation) service to provide personalized recipe suggestions.
-
-**Repository structure (high level)**
-
-* `backend-service/` — core backend (REST API, DB integrations, web service). ([GitHub][2])
-* `rag_service/` — retrieval & LLM orchestration (embeddings, vector store, prompts, RAG orchestration). ([GitHub][3])
+Here’s a more tailored **README.md** for your `develop` branch of **Recipe Recommendation Engine**. You can drop this into the root of your repo (or adjust sections as needed).
 
 ---
 
-## Quick overview
+```markdown
+# Recipe Recommendation Engine 🌿
 
-This project provides a modular stack for generating recipe recommendations based on user inputs (ingredients, preferences, dietary constraints) by combining retrieval techniques and generative models. It is split into a classical backend API layer and a RAG/ML service so components can be developed, tested, and deployed independently.
+A modular system combining a backend API and a retrieval-augmented generation (RAG) service to deliver personalized recipe recommendations.
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)  
+- [Repository Structure](#repository-structure)  
+- [Features](#features)  
+- [Prerequisites](#prerequisites)  
+- [Quick Start / Local Development](#quick-start--local-development)  
+- [Docker / Container Setup](#docker--container-setup)  
+- [API Usage Examples](#api-usage-examples)  
+- [Configuration & Environment Variables](#configuration--environment-variables)  
+- [Testing](#testing)  
+- [Development Notes & Tips](#development-notes--tips)  
+- [Contributing](#contributing)  
+- [Troubleshooting](#troubleshooting)  
+- [Roadmap & Future Work](#roadmap--future-work)  
+- [License & Authors](#license--authors)  
+
+---
+
+## Overview
+
+This project is designed to generate recipe recommendations based on user inputs such as ingredients they have, dietary constraints, or preferences. It is split into two main components:
+
+- **Backend service** (REST API, database, orchestration)  
+- **RAG / ML service** (embeddings, vector store, prompt orchestration, LLM inference)
+
+By separating the backend logic and the generative/retrieval logic, each part can evolve, scale, or be swapped independently.
+
+---
+
+## Repository Structure
+
+At the root of the `develop` branch, you should see:
+
+```
+
+.
+├── backend-service/
+├── frontend/
+├── rag_service/
+├── README         ← (this file)
+
+````
+
+- `backend-service/` — Contains your REST API server, database models, routing, integrations  
+- `rag_service/` — Handles embedding generation, vector store, retrieval, and LLM orchestration  
+- `frontend/` — (if applicable) UI client or frontend code  
 
 ---
 
 ## Features
 
-* REST API endpoints to request and receive recipe recommendations (see `backend-service`).
-* RAG-style retrieval service that uses embeddings + vector store to surface relevant recipe content and uses an LLM for final generation/completion (see `rag_service`).
-* Docker-friendly layout for local development and deployment.
-* Designed for extension — swap vector stores, LLM providers, or frontends.
+- RESTful API endpoints to request recipe recommendations  
+- RAG pipeline: embedding + retrieval for context + LLM to generate refined suggestions  
+- Support for filtering based on dietary constraints, ingredients, etc.  
+- Modular and extensible architecture — replace LLM provider or vector store as desired  
+- Docker-friendly structure (for easier deployment)  
 
 ---
 
 ## Prerequisites
 
-* Python 3.10+ (match project's `requirements.txt` if present)
-* Docker & Docker Compose (optional but recommended for dev + prod parity)
-* An LLM provider/API key (OpenAI, Anthropic, or other) for the RAG service
-* (Optional) A vector database (e.g., Weaviate, Milvus, Pinecone) or local FAISS/Chroma depending on implementation
+Before running, you’ll want:
 
-> NOTE: Exact dependency files and runtime versions live in each subfolder (check `backend-service/requirements.txt` or `rag_service/requirements.txt` if present). ([GitHub][2])
+- Python 3.10+ (check `requirements.txt` in each subfolder)  
+- (Optional but recommended) Docker & Docker Compose  
+- An LLM provider / API key (e.g. OpenAI, Anthropic, or other)  
+- A vector database or local embedding store (FAISS, Chroma, Pinecone, etc.)  
 
 ---
 
-## Getting started (local development)
+## Quick Start / Local Development
 
-### 1. Clone repository
+### 1. Clone & switch to develop
 
 ```bash
 git clone https://github.com/ranjitpnadar/Recipe-Recommendation-Engine.git
 cd Recipe-Recommendation-Engine
 git checkout develop
-```
+````
 
-(Repo overview referenced here). ([GitHub][1])
-
----
-
-### 2. Backend service (basic steps)
-
-1. Change into backend folder:
-
-   ```bash
-   cd backend-service
-   ```
-
-2. Create & activate a virtual environment:
-
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate   # macOS / Linux
-   .venv\Scripts\activate      # Windows (PowerShell)
-   ```
-
-3. Install dependencies:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Add environment variables (example `.env`):
-
-   ```
-   FLASK_APP=app.py             # or your entrypoint
-   FLASK_ENV=development
-   DATABASE_URL=postgresql://user:pass@localhost:5432/recipes
-   SECRET_KEY=your-secret-key
-   RAG_SERVICE_URL=http://localhost:8001  # example where rag_service is served
-   ```
-
-   Adjust variable names to match your code.
-
-5. Run the service:
-
-   ```bash
-   # if Flask
-   flask run --host=0.0.0.0 --port=8000
-
-   # or if using gunicorn/uvicorn:
-   gunicorn -w 4 backend_service.app:app
-   ```
-
-   Check the actual entrypoint inside `backend-service` (e.g., `app.py`, `main.py`). ([GitHub][2])
-
----
-
-### 3. RAG service (basic steps)
-
-1. Change into rag folder:
-
-   ```bash
-   cd ../rag_service
-   ```
-
-2. Set up virtualenv and install:
-
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
-
-3. Environment variables (example):
-
-   ```
-   OPENAI_API_KEY=sk-...
-   VECTOR_DB_URL=http://localhost:6333   # if using a hosted vector DB
-   EMBEDDING_MODEL=all-mpnet-base-v2     # example
-   RAG_HOST=0.0.0.0
-   RAG_PORT=8001
-   ```
-
-4. Start the service (example):
-
-   ```bash
-   python run_rag_service.py
-   # or
-   uvicorn rag_service.app:app --host 0.0.0.0 --port 8001 --reload
-   ```
-
-   Inspect `rag_service` for the exact run command. ([GitHub][3])
-
----
-
-## Running with Docker (recommended for parity)
-
-If the repo includes `Dockerfile` / `docker-compose.yml` at service level, you can run both services in containers.
-
-Example `docker-compose` usage (example only):
+### 2. Set up and run the backend
 
 ```bash
-# from repo root (if docker-compose.yml exists)
+cd backend-service
+
+python -m venv .venv
+source .venv/bin/activate     # for Linux / macOS
+# .venv\Scripts\activate      # on Windows
+
+pip install -r requirements.txt
+
+# Set environment variables, e.g.:
+export FLASK_APP=app.py
+export FLASK_ENV=development
+export DATABASE_URL=postgresql://user:pass@localhost:5432/recipes
+export SECRET_KEY=some_secret
+export RAG_SERVICE_URL=http://localhost:8001
+
+# Run the backend API
+flask run --host=0.0.0.0 --port=8000
+```
+
+Adjust the entrypoint (e.g. `app.py`) as per your implementation.
+
+### 3. Set up and run the RAG service
+
+```bash
+cd ../rag_service
+
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# Environment variables — examples:
+export OPENAI_API_KEY=sk-...
+export VECTOR_DB_URL=http://localhost:6333
+export EMBEDDING_MODEL=all-mpnet-base-v2
+export RAG_HOST=0.0.0.0
+export RAG_PORT=8001
+
+# Run the RAG service
+uvicorn rag_service.app:app --host 0.0.0.0 --port 8001 --reload
+```
+
+Once both are running, the backend should be able to forward queries to the RAG service.
+
+---
+
+## Docker / Container Setup
+
+If your repo contains `Dockerfile` or `docker-compose.yml`, you can use:
+
+```bash
 docker-compose up --build
 ```
 
-If no compose file exists, build and run each service Dockerfile separately:
+If not, you can containerize each service separately:
 
 ```bash
-# build
+# From root
 docker build -t recipe-backend ./backend-service
 docker build -t recipe-rag ./rag_service
 
-# run (example)
 docker run -e DATABASE_URL=... -p 8000:8000 recipe-backend
 docker run -e OPENAI_API_KEY=... -p 8001:8001 recipe-rag
 ```
 
+This helps with environment consistency and deployment.
+
 ---
 
-## Example API usage
+## API Usage Examples
 
-> Replace paths & port with actual endpoints implemented inside `backend-service`.
-
-**Request recommendations**
+Here’s a sample usage of your recommendation endpoint (adjust paths if your route is different):
 
 ```bash
 curl -X POST http://localhost:8000/api/recommend \
@@ -177,7 +175,7 @@ curl -X POST http://localhost:8000/api/recommend \
   }'
 ```
 
-**Possible response** (example)
+You might receive a response like:
 
 ```json
 {
@@ -187,93 +185,110 @@ curl -X POST http://localhost:8000/api/recommend \
       "title": "Caprese Salad",
       "score": 0.97,
       "ingredients": ["tomato", "basil", "mozzarella", "olive oil", "salt"],
-      "instructions": "..."
+      "instructions": "Slice tomatoes and mozzarella, layer them with basil leaves, drizzle olive oil, season, and serve."
     },
     ...
   ]
 }
 ```
 
-If the backend proxies to the RAG service, the backend will typically call an internal RAG endpoint such as:
+Internally, the backend may forward a request to RAG:
 
 ```
-POST http://{RAG_SERVICE_HOST}:{RAG_PORT}/v1/query
-body: { "query": "...", "context_filters": {...} }
+POST http://{RAG_HOST}:{RAG_PORT}/v1/query
+{
+  "query": "...",
+  "context_filters": { … }
+}
 ```
 
-Adjust to the actual implementation in `rag_service`. ([GitHub][2])
+Adjust according to code in `rag_service`.
 
 ---
 
-## Environment / Configuration (suggested)
+## Configuration & Environment Variables
 
-Keep secrets out of source control. Add a `.env.example` with the variables you expect. Common variables:
+It’s good to maintain a `.env.example` file. Common variables include:
 
-* `DATABASE_URL` — Postgres/MySQL URI
-* `REDIS_URL` — Redis for caching / queues
-* `OPENAI_API_KEY` (or provider key)
-* `VECTOR_DB_ENDPOINT` — vector DB host
-* `RAG_SERVICE_URL` — backend → rag service
-* `SECRET_KEY` — app secret
+| Name                                    | Purpose                                           |
+| --------------------------------------- | ------------------------------------------------- |
+| `DATABASE_URL`                          | URI for your SQL database (Postgres, MySQL, etc.) |
+| `REDIS_URL`                             | (Optional) for caching, queues, etc.              |
+| `OPENAI_API_KEY`                        | API key or credentials for LLM provider           |
+| `VECTOR_DB_URL` or `VECTOR_DB_ENDPOINT` | Host/URL for vector database                      |
+| `RAG_SERVICE_URL`                       | For backend → RAG communication                   |
+| `SECRET_KEY`                            | Application secret (sessions, tokens)             |
+
+Make sure to **never commit** secret keys or credentials to the repo.
 
 ---
 
-## Tests
+## Testing
 
-If tests exist in the repo, run with:
+If you include tests (e.g. with `pytest`), you can run:
 
 ```bash
 pytest
-# or a tox/make target if present
 ```
 
-Add unit tests for:
+Test coverage suggestions:
 
-* endpoint behavior
-* retriever + embedding logic
-* vector store indexing/querying
-* integration tests (backend ↔ rag)
+* API endpoints (input validation, error cases)
+* Embedding / retrieval logic
+* Vector store operations (indexing, querying)
+* End-to-end integration between backend and RAG
+
+You might also create a wrapper script or `Makefile` / `tox` config to streamline testing.
 
 ---
 
-## Development notes & tips
+## Development Notes & Tips
 
-* Keep the RAG index up-to-date whenever recipe data changes (reindex job). Consider using an async worker (Celery / RQ) for large imports.
-* Use low-cost embedding models for bulk indexing, high-quality/LLM for final generation.
-* Add schema validation on input (Pydantic / Marshmallow) to avoid malformed queries.
-* Consider rate-limiting LLM calls and caching results for repeated queries.
+* Whenever your recipe dataset changes, reindex the embeddings so the vector store stays up to date. Consider automating this (e.g. via a scheduler or background worker).
+* Use lighter embedding models for bulk indexing; reserve more powerful ones for inference or fine-tuning.
+* Validate incoming API payloads (e.g. with Pydantic or Marshmallow) to avoid unclean inputs.
+* Batch embedding or vector store operations where possible to reduce overhead.
+* Cache popular or repeated queries to reduce LLM calls and latency.
+* Modularize your prompt templates (in `rag_service`) so you can experiment more easily.
 
 ---
 
 ## Contributing
 
-1. Fork the repo
-2. Create a feature branch: `git checkout -b feat/my-change`
-3. Add tests and documentation for your change
-4. Open a PR describing the change
+1. Fork this repository
+2. Create a feature branch: `git checkout -b feat/my-feature`
+3. Write code, tests, and update docs
+4. Submit a pull request explaining your changes
 
-Please follow a standard commit message and include a short description of the testing you performed.
+Please keep commit messages clean and descriptive, and indicate which tests you ran.
 
 ---
 
 ## Troubleshooting
 
-* `Connection errors` to vector DB: confirm service is running and correct endpoint/credentials are set in env.
-* `LLM authorization errors`: verify the provider key and any required headers or org IDs.
-* `Performance`: add caching for repeated queries and batch embedding requests during indexing.
+* **Vector DB connection errors**: Ensure your vector database is running and reachable with correct URL/credentials
+* **LLM errors (authentication, quota, etc.)**: Check your API key, account limits, or any required headers
+* **Slow latency / performance issues**: Add caching, batch requests, or consider more efficient vector indexing
+* **Missing dependencies**: Check `requirements.txt` in both `backend-service` and `rag_service`
 
 ---
 
-## Roadmap / Ideas
+## Roadmap & Future Work
 
-* Add user profiles and collaborative filtering signals.
-* Add nutritional analysis / calorie estimation.
-* Add UI (web/mobile) with saved favorites & shopping list export.
-* Multi-language support for recipe generation.
+* Add **user profiles**, **ratings**, or **collaborative filtering** feedback
+* Incorporate **nutritional / calorie estimation**
+* Build a **web or mobile frontend** (if `frontend/` is not yet fleshed out)
+* Support **multi-language** recipe generation
+* Allow users to **upload custom recipes** and incorporate them into recommendations
+* Add **feedback loops** — use user interactions to refine future suggestions
 
 ---
 
 ## License & Authors
 
-* Author: `ranjitpnadar` (repository at `ranjitpnadar/Recipe-Recommendation-Engine`). ([GitHub][1])
-* Add a license file (e.g., `MIT` or whichever you prefer) if not already present.
+* **Author**: `ranjitpnadar`
+* Please add a `LICENSE` file (e.g. MIT, Apache 2.0) if not already present and refer to it here
+
+---
+
+Let me know if you want a version with badges (CI / coverage / license), images (architecture diagram), or auto-generation scripts included. Would you like me to format this into a ready-to-paste `README.md` with visual embellishments?
