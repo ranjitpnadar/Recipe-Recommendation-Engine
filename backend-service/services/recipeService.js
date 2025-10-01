@@ -1,7 +1,7 @@
 // services/recipeService.js
 const prisma = require('../config/prismaClient');
 const axios = require('axios');
-
+const redisClient = require('../config/redisClient');
 class RecipeService {
     /**
      * Maps request data to Prisma-compatible format.
@@ -28,6 +28,12 @@ class RecipeService {
         try {
             const data = this.#mapRecipeData(recipeData);
             const newRecipe = await prisma.recipe.create({ data });
+            //Invalidate cache from all users
+            redisClient.keys('recipe_search:*').then((keys) => {
+                keys.forEach((key) => {
+                    redisClient.del(key);
+                });
+            })
             return newRecipe;
         } catch (error) {
             throw new Error(`Error creating recipe: ${error.message}`);
@@ -85,6 +91,12 @@ class RecipeService {
                 where: { recipeId },
                 data: this.#mapRecipeData(recipeData),
             });
+            //Invalidate cache from all users
+            redisClient.keys('recipe_search:*').then((keys) => {
+                keys.forEach((key) => {
+                    redisClient.del(key);
+                });
+            })
             return updatedRecipe;
         } catch (error) {
             if (error.code === 'P2025') {
@@ -111,6 +123,12 @@ class RecipeService {
     // --- LLM Search Integration ---
     static async searchRecipesWithLLM(userId, rawQuery) {
         try {
+            const cacheKey = `recipe_search:${userId}:${rawQuery}`;
+            const cachedResult = await redisClient.get(cacheKey);
+            if(cachedResult){
+                console.log('returning response from cache.')
+                return JSON.parse(cachedResult);
+            }
             const recipeRecommendationUrl = process.env.RECIPE_HOST + "recommend_recipe";
             const requestData = {
                 "ingredients": rawQuery,
@@ -125,6 +143,7 @@ class RecipeService {
             };
 
             const response = await axios.request(config);
+            await redisClient.set(cacheKey, JSON.stringify(response.data), {EX: 3600});
             return response.data;
         } catch (error) {
             // Throw a custom error with a clearer message
